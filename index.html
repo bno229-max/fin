@@ -3,35 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanças Pro - Versão 5.0</title>
+    <title>Finanças Pro 5.0 - Premium</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0f172a; --accent: #3b82f6; --success: #22c55e;
-            --danger: #ef4444; --bg: #f1f5f9; --white: #ffffff; --border: #e2e8f0;
+            --danger: #ef4444; --warning: #f59e0b; --bg: #f1f5f9; --white: #ffffff; --border: #e2e8f0;
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; color: #1e293b; min-height: 100vh; }
         
-        /* TELA DE LOGIN (BLOQUEIO) */
+        /* BLOQUEIO DE CADASTRO */
         #auth-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 9999;
-            display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 9999;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
         }
         .auth-card {
-            background: #1e293b; padding: 40px; border-radius: 20px; width: 100%; max-width: 350px;
-            text-align: center; color: white; border: 1px solid rgba(255,255,255,0.1);
+            background: #1e293b; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px;
+            text-align: center; color: white; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
         }
         .auth-input { 
             width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-            background: #0f172a; color: white; box-sizing: border-box;
+            background: #0f172a; color: white; box-sizing: border-box; outline: none;
         }
 
-        /* SIDEBAR */
-        aside { width: 300px; background: var(--primary); color: white; height: 100vh; padding: 25px; position: fixed; box-sizing: border-box; display: flex; flex-direction: column; }
+        /* Sidebar Profissional */
+        aside { width: 300px; background: var(--primary); color: white; height: 100vh; padding: 25px; position: fixed; box-sizing: border-box; display: flex; flex-direction: column; z-index: 100; }
         .sidebar-header { margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        
+        #nome-empresa-exibicao { margin: 10px 0 0 0; font-size: 1.3rem; font-weight: 700; color: white; }
+
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 0.65rem; color: #94a3b8; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
         .form-group input, .form-group select { 
@@ -39,82 +40,101 @@
             color: white; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; outline: none;
         }
 
-        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; padding: 12px; font-size: 0.85rem; width: 100%; transition: 0.3s; }
-        .btn-add { background: var(--accent); color: white; margin-top: 10px; }
-        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; margin-top: auto; border: 1px solid rgba(239, 68, 68, 0.2); display: none; }
+        .btn-glow { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; padding: 12px; font-size: 0.85rem; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .btn-add { background: var(--accent); color: white; }
+        .btn-config { background: rgba(255,255,255,0.05); color: #94a3b8; margin-top: auto; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-sair { background: #ef444422; color: #ef4444; margin-top: 10px; border: 1px solid #ef444444; }
 
-        /* CONTEÚDO PRINCIPAL */
+        /* Main */
         main { margin-left: 300px; padding: 30px; width: calc(100% - 300px); box-sizing: border-box; }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
         .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-        .stat-card .val { font-size: 1.6rem; font-weight: 700; margin-top: 5px; }
+        .stat-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 5px; }
         
-        .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px; }
-        .chart-box { background: white; padding: 15px; border-radius: 12px; height: 280px; border: 1px solid var(--border); }
+        .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .chart-box { background: white; padding: 15px; border-radius: 12px; height: 250px; border: 1px solid var(--border); }
 
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
+
+        /* Modal Config */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 350px; }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
         <div class="auth-card">
-            <h2>CRIAR CONTA</h2>
-            <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 20px;">Limite atingido. Cadastre-se para continuar seus lançamentos.</p>
-            <input type="email" id="email" class="auth-input" placeholder="E-mail">
-            <input type="password" id="pass" class="auth-input" placeholder="Senha">
-            <button class="btn btn-add" onclick="login()">CADASTRAR E ENTRAR</button>
+            <h2 style="margin-top:0">CRIAR CONTA PRO</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 25px;">Você atingiu o limite de teste. Cadastre-se para liberar o dashboard completo.</p>
+            <input type="text" id="reg-nome" class="auth-input" placeholder="Seu Nome Completo">
+            <input type="email" id="reg-email" class="auth-input" placeholder="E-mail">
+            <input type="password" id="reg-pass" class="auth-input" placeholder="Crie uma Senha">
+            <button class="btn-glow btn-add" onclick="finalizarCadastro()">CONCLUIR CADASTRO PREMIUM</button>
         </div>
     </div>
 
     <aside>
         <div class="sidebar-header">
-            <small style="color:var(--accent); font-weight:bold;">SISTEMA FINANCEIRO</small>
-            <h2 id="status-user" style="margin:5px 0 0 0; font-size:1.2rem;">Modo Visitante</h2>
+            <small style="color:var(--accent); font-weight:800; letter-spacing:1px">FINANÇAS 5.0</small>
+            <h2 id="nome-empresa-exibicao">Carregando...</h2>
         </div>
 
-        <div class="form">
-            <div class="form-group"><label>Descrição</label><input type="text" id="in-desc"></div>
-            <div class="form-group"><label>Valor R$</label><input type="number" id="in-val" step="0.01"></div>
-            <div class="form-group"><label>Data</label><input type="date" id="in-date"></div>
-            <div class="form-group">
-                <label>Tipo</label>
-                <select id="in-tipo">
-                    <option value="entrada">Entrada (+)</option>
-                    <option value="saida">Saída (-)</option>
-                </select>
-            </div>
-            <button class="btn btn-add" onclick="add()">LANÇAR AGORA</button>
-            <button id="btn-sair" class="btn btn-logout" onclick="sair()">SAIR DA CONTA</button>
+        <div class="form-group"><label>Descrição</label><input type="text" id="in-desc"></div>
+        <div class="form-group"><label>Valor R$</label><input type="number" id="in-val" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="in-date"></div>
+        <div class="form-group">
+            <label>Tipo</label>
+            <select id="in-tipo">
+                <option value="entrada">Entrada (+)</option>
+                <option value="saida">Saída (-)</option>
+            </select>
         </div>
+        <button class="btn-glow btn-add" onclick="add()">LANÇAR AGORA</button>
+        
+        <button class="btn-glow btn-config" onclick="abrirConfig()">⚙️ CONFIGURAÇÕES</button>
+        <button id="btn-sair" class="btn-glow btn-sair" style="display:none" onclick="sair()">SAIR DA CONTA</button>
     </aside>
 
     <main>
         <div class="stats-grid">
-            <div class="stat-card">Saldo<div class="val" id="res-caixa">R$ 0,00</div></div>
-            <div class="stat-card">Entradas<div class="val" style="color:var(--success)" id="res-ent">R$ 0,00</div></div>
-            <div class="stat-card">Saídas<div class="val" style="color:var(--danger)" id="res-sai">R$ 0,00</div></div>
+            <div class="stat-card"><small>Saldo em Caixa</small><div class="value" id="res-caixa">R$ 0,00</div></div>
+            <div class="stat-card"><small>Receitas</small><div class="value" style="color:var(--success)" id="res-ent">R$ 0,00</div></div>
+            <div class="stat-card"><small>Despesas</small><div class="value" style="color:var(--danger)" id="res-sai">R$ 0,00</div></div>
         </div>
 
         <div class="charts-grid">
             <div class="chart-box"><canvas id="c-bar"></canvas></div>
             <div class="chart-box"><canvas id="c-line"></canvas></div>
+            <div class="chart-box"><canvas id="c-pie"></canvas></div>
         </div>
 
-        <table border="0">
-            <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Ação</th></tr></thead>
+        <table>
+            <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody id="lista"></tbody>
         </table>
     </main>
 
+    <div id="modal-config" class="modal">
+        <div class="modal-content">
+            <h3>Configurações</h3>
+            <label>Nome da Empresa</label>
+            <input type="text" id="conf-nome" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:8px;">
+            <button class="btn-glow btn-add" onclick="salvarConfig()">SALVAR</button>
+            <button onclick="document.getElementById('modal-config').style.display='none'" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer; color:#94a3b8">Fechar</button>
+        </div>
+    </div>
+
     <script>
-        let db = JSON.parse(localStorage.getItem('f_v5_final')) || [];
-        let logado = localStorage.getItem('f_auth_v5') === 'true';
+        let db = JSON.parse(localStorage.getItem('fin_v5_final')) || { trans: [], config: { nome: "Minha Empresa" } };
+        let logado = localStorage.getItem('fin_auth_v5') === 'true';
         let charts = {};
 
         function add() {
-            if (!logado && db.length >= 2) {
+            // REGRA DOS 2 LANÇAMENTOS
+            if (!logado && db.trans.length >= 2) {
                 document.getElementById('auth-overlay').style.display = 'flex';
                 return;
             }
@@ -122,41 +142,58 @@
             const d = document.getElementById('in-desc'), v = document.getElementById('in-val'), dt = document.getElementById('in-date'), t = document.getElementById('in-tipo');
             if(!d.value || !v.value || !dt.value) return alert("Preencha tudo!");
 
-            db.push({ id: Date.now(), desc: d.value, val: parseFloat(v.value), data: dt.value, tipo: t.value });
-            localStorage.setItem('f_v5_final', JSON.stringify(db));
+            db.trans.push({ id: Date.now(), desc: d.value, val: parseFloat(v.value), data: dt.value, tipo: t.value, status: 'pago' });
+            localStorage.setItem('fin_v5_final', JSON.stringify(db));
             
             d.value = ''; v.value = ''; dt.value = '';
             render();
         }
 
-        function login() {
-            if(document.getElementById('email').value && document.getElementById('pass').value) {
-                localStorage.setItem('f_auth_v5', 'true');
+        function finalizarCadastro() {
+            const nome = document.getElementById('reg-nome').value;
+            const email = document.getElementById('reg-email').value;
+            if(nome && email) {
+                db.config.nome = nome; // O nome do usuário vira o nome da empresa
+                localStorage.setItem('fin_auth_v5', 'true');
+                localStorage.setItem('fin_v5_final', JSON.stringify(db));
                 location.reload();
+            } else {
+                alert("Preencha Nome e E-mail!");
             }
         }
 
         function sair() {
-            localStorage.removeItem('f_auth_v5');
+            localStorage.removeItem('fin_auth_v5');
             location.reload();
         }
 
+        function abrirConfig() {
+            document.getElementById('conf-nome').value = db.config.nome;
+            document.getElementById('modal-config').style.display = 'flex';
+        }
+
+        function salvarConfig() {
+            db.config.nome = document.getElementById('conf-nome').value;
+            localStorage.setItem('fin_v5_final', JSON.stringify(db));
+            document.getElementById('modal-config').style.display = 'none';
+            render();
+        }
+
         function render() {
-            if(logado) {
-                document.getElementById('status-user').innerText = "Conta Ativa";
-                document.getElementById('btn-sair').style.display = 'block';
-                document.getElementById('auth-overlay').style.display = 'none';
-            }
+            document.getElementById('nome-empresa-exibicao').innerText = db.config.nome;
+            if(logado) document.getElementById('btn-sair').style.display = 'block';
 
             const lista = document.getElementById('lista');
             let ent = 0, sai = 0, html = '';
 
-            db.sort((a,b) => a.data.localeCompare(b.data)).forEach(i => {
+            db.trans.sort((a,b) => b.data.localeCompare(a.data)).forEach(i => {
                 if(i.tipo === 'entrada') ent += i.val; else sai += i.val;
+                const cor = i.tipo === 'entrada' ? 'var(--success)' : 'var(--danger)';
                 html += `<tr>
                     <td>${i.data.split('-').reverse().join('/')}</td>
                     <td>${i.desc}</td>
                     <td>R$ ${i.val.toFixed(2)}</td>
+                    <td><span class="status-badge" style="background:${cor}22; color:${cor}">CONCLUÍDO</span></td>
                     <td><button onclick="del(${i.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
                 </tr>`;
             });
@@ -170,8 +207,8 @@
         }
 
         function del(id) {
-            db = db.filter(x => x.id !== id);
-            localStorage.setItem('f_v5_final', JSON.stringify(db));
+            db.trans = db.trans.filter(x => x.id !== id);
+            localStorage.setItem('fin_v5_final', JSON.stringify(db));
             render();
         }
 
@@ -179,11 +216,18 @@
             if(charts.b) charts.b.destroy();
             charts.b = new Chart(document.getElementById('c-bar'), {
                 type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [e, s], backgroundColor: ['#22c55e', '#ef4444'] }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
+
             if(charts.l) charts.l.destroy();
             charts.l = new Chart(document.getElementById('c-line'), {
-                type: 'line', data: { labels: db.map(i => i.data.split('-')[2]), datasets: [{ label: 'Movimento', data: db.map(i => i.val), borderColor: '#3b82f6', tension: 0.3 }] },
+                type: 'line', data: { labels: db.trans.map(i => i.data.split('-')[2]), datasets: [{ label: 'Saldo', data: db.trans.map(i => i.val), borderColor: '#3b82f6', tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            if(charts.p) charts.p.destroy();
+            charts.p = new Chart(document.getElementById('c-pie'), {
+                type: 'doughnut', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [e, s], backgroundColor: ['#22c55e', '#ef4444'] }] },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
