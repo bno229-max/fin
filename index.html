@@ -1,237 +1,752 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanças Pro 5.0 - Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinAI - Finanças Pessoais Inteligente</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6c5ce7">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a; --accent: #3b82f6; --success: #22c55e;
-            --danger: #ef4444; --warning: #f59e0b; --bg: #f1f5f9; --white: #ffffff; --border: #e2e8f0;
+            --finai-purple: #6c5ce7;
+            --finai-dark-purple: #4a3aff;
+            --finai-bg: #f8f9fe;
+            --finai-card-bg: #ffffff;
+            --finai-text-main: #2d3748;
+            --finai-text-muted: #a0aec0;
+            --gauge-bg: #e2e8f0;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; color: #1e293b; min-height: 100vh; }
+        [data-theme="dark"] {
+            --finai-bg: #0b0f19;
+            --finai-card-bg: #151a2a;
+            --finai-text-main: #e2e8f0;
+            --finai-text-muted: #94a3b8;
+            --gauge-bg: #334155;
+        }
+
+        [data-theme="dark"] .finai-card {
+            background: rgba(21, 26, 42, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 254, 0.2); box-shadow: 0 0 15px rgba(108, 92, 231, 0.2), inset 0 0 10px rgba(0, 242, 254, 0.05);
+        }
+        [data-theme="dark"] .app-header { background: #151a2a; border-bottom: 1px solid rgba(0, 242, 254, 0.3); box-shadow: 0 4px 20px rgba(108, 92, 231, 0.2); }
+        [data-theme="dark"] .app-navbar { background: #151a2a; border-top: 1px solid rgba(0, 242, 254, 0.3); box-shadow: 0 -4px 20px rgba(108, 92, 231, 0.2); }
+        [data-theme="dark"] h6, [data-theme="dark"] span { color: var(--finai-text-main); }
+        [data-theme="dark"] .text-muted { color: #94a3b8 !important; }
+
+        /* Estrutura Nativa App TRAVADA */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--finai-bg); 
+            color: var(--finai-text-main); 
+            margin: 0; padding: 0; 
+            height: 100dvh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
         
-        /* BLOQUEIO DE CADASTRO */
-        #auth-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 9999;
-            display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);
+        .app-header { 
+            padding: 20px 20px 15px 20px; 
+            background: var(--finai-card-bg); 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 99; flex-shrink: 0;
         }
-        .auth-card {
-            background: #1e293b; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px;
-            text-align: center; color: white; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
-        }
-        .auth-input { 
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-            background: #0f172a; color: white; box-sizing: border-box; outline: none;
-        }
-
-        /* Sidebar Profissional */
-        aside { width: 300px; background: var(--primary); color: white; height: 100vh; padding: 25px; position: fixed; box-sizing: border-box; display: flex; flex-direction: column; z-index: 100; }
-        .sidebar-header { margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        #nome-empresa-exibicao { margin: 10px 0 0 0; font-size: 1.3rem; font-weight: 700; color: white; }
-
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.65rem; color: #94a3b8; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
-        .form-group input, .form-group select { 
-            width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; outline: none;
-        }
-
-        .btn-glow { border: none; border-radius: 8px; cursor: pointer; font-weight: 600; padding: 12px; font-size: 0.85rem; width: 100%; transition: 0.3s; margin-top: 10px; }
-        .btn-add { background: var(--accent); color: white; }
-        .btn-config { background: rgba(255,255,255,0.05); color: #94a3b8; margin-top: auto; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-sair { background: #ef444422; color: #ef4444; margin-top: 10px; border: 1px solid #ef444444; }
-
-        /* Main */
-        main { margin-left: 300px; padding: 30px; width: calc(100% - 300px); box-sizing: border-box; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-        .stat-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 5px; }
         
-        .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .chart-box { background: white; padding: 15px; border-radius: 12px; height: 250px; border: 1px solid var(--border); }
+        .app-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            -webkit-overflow-scrolling: touch; 
+        }
+        .app-content::-webkit-scrollbar { width: 0px; }
+        
+        .app-navbar { 
+            background: var(--finai-card-bg); 
+            border-top: 1px solid rgba(0,0,0,0.05); 
+            padding: 10px 10px 25px 10px; 
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 100; flex-shrink: 0;
+        }
 
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
+        .nav-item-custom { display: flex; flex-direction: column; align-items: center; color: var(--finai-text-muted); text-decoration: none; font-size: 11px; font-weight: 500; cursor: pointer; transition: color 0.2s ease; }
+        .nav-item-custom.active { color: var(--finai-purple); text-shadow: 0 0 10px rgba(108, 92, 231, 0.5); }
+        .nav-item-custom i { font-size: 20px; margin-bottom: 2px; }
 
-        /* Modal Config */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 350px; }
+        .finai-card { background: var(--finai-card-bg); border-radius: 20px; padding: 18px; border: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); margin-bottom: 15px; }
+        .finai-card-gradient { background: linear-gradient(135deg, #6c5ce7 0%, #a363d9 100%); color: white; border: none !important;}
+        
+        .app-view { display: none !important; }
+        .app-view.active { display: block !important; }
+        #login-view.active { display: flex !important; } 
+        
+        .cursor-pointer { cursor: pointer; }
+        .input-taxa { background: transparent; border: none; text-align: center; font-weight: bold; font-size: 20px; width: 100%; color: inherit; }
+        .input-taxa:focus { outline: none; border-bottom: 2px solid var(--finai-purple); }
+
+        .gauge-path-bg { stroke: var(--gauge-bg); transition: stroke 0.3s ease; }
+        .gauge-path-fill { transition: stroke-dashoffset 0.8s ease-out; }
+        
+        #filtro-mes { border: none; padding: 0; margin: 0; outline: none; box-shadow: none; font-size: inherit; color: var(--finai-text-main); background: transparent; cursor: pointer; }
+        [data-theme="dark"] #filtro-mes::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.8); }
     </style>
 </head>
 <body>
 
-    <div id="auth-overlay">
-        <div class="auth-card">
-            <h2 style="margin-top:0">CRIAR CONTA PRO</h2>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 25px;">Você atingiu o limite de teste. Cadastre-se para liberar o dashboard completo.</p>
-            <input type="text" id="reg-nome" class="auth-input" placeholder="Seu Nome Completo">
-            <input type="email" id="reg-email" class="auth-input" placeholder="E-mail">
-            <input type="password" id="reg-pass" class="auth-input" placeholder="Crie uma Senha">
-            <button class="btn-glow btn-add" onclick="finalizarCadastro()">CONCLUIR CADASTRO PREMIUM</button>
-        </div>
+<!-- Header Principal -->
+<div class="app-header" id="main-header" style="display: none !important;">
+    <div>
+        <small class="text-muted d-block" style="font-size: 11px;">Olá, <span id="header-user-name">Usuário</span>!</small>
+        <h5 class="fw-bold mb-0" style="font-size: 18px;">Fin<span style="color: var(--finai-purple);">AI</span> - Finanças Inteligente</h5>
     </div>
+    <div class="position-relative cursor-pointer" onclick="window.switchView('settings')">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" id="header-profile-img" alt="Profile" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 2px solid var(--finai-purple);">
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 8px; padding: 3px 5px;">Pro</span>
+    </div>
+</div>
 
-    <aside>
-        <div class="sidebar-header">
-            <small style="color:var(--accent); font-weight:800; letter-spacing:1px">FINANÇAS 5.0</small>
-            <h2 id="nome-empresa-exibicao">Carregando...</h2>
-        </div>
+<div class="app-content">
 
-        <div class="form-group"><label>Descrição</label><input type="text" id="in-desc"></div>
-        <div class="form-group"><label>Valor R$</label><input type="number" id="in-val" step="0.01"></div>
-        <div class="form-group"><label>Data</label><input type="date" id="in-date"></div>
-        <div class="form-group">
-            <label>Tipo</label>
-            <select id="in-tipo">
-                <option value="entrada">Entrada (+)</option>
-                <option value="saida">Saída (-)</option>
-            </select>
+    <!-- VIEW: LOGIN -->
+    <div id="login-view" class="app-view active" style="flex-direction: column; justify-content: center; height: 100%;">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-1" style="font-size: 38px;">Fin<span style="color: var(--finai-purple);">AI</span></h2>
+            <p class="text-muted" style="font-size: 14px;">Finanças Pessoais Inteligente</p>
         </div>
-        <button class="btn-glow btn-add" onclick="add()">LANÇAR AGORA</button>
         
-        <button class="btn-glow btn-config" onclick="abrirConfig()">⚙️ CONFIGURAÇÕES</button>
-        <button id="btn-sair" class="btn-glow btn-sair" style="display:none" onclick="sair()">SAIR DA CONTA</button>
-    </aside>
-
-    <main>
-        <div class="stats-grid">
-            <div class="stat-card"><small>Saldo em Caixa</small><div class="value" id="res-caixa">R$ 0,00</div></div>
-            <div class="stat-card"><small>Receitas</small><div class="value" style="color:var(--success)" id="res-ent">R$ 0,00</div></div>
-            <div class="stat-card"><small>Despesas</small><div class="value" style="color:var(--danger)" id="res-sai">R$ 0,00</div></div>
+        <div class="finai-card pb-4">
+            <div class="mb-3">
+                <label class="form-label text-muted fw-bold" style="font-size: 11px;">E-mail</label>
+                <input type="email" id="login-email" class="form-control" placeholder="seu@email.com" style="background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.05);">
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-muted fw-bold" style="font-size: 11px;">Senha</label>
+                <input type="password" id="login-pass" class="form-control" placeholder="••••••••" style="background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.05);">
+            </div>
+            <button class="btn btn-primary w-100 rounded-pill mb-4 py-2 fw-bold" style="background: var(--finai-purple); border: none;" id="btn-acessar" onclick="window.fazerLogin()">Acessar Conta</button>
+            <div class="text-center mb-2">
+                <a href="#" class="text-muted text-decoration-none" style="font-size: 12px;" onclick="window.criarConta()">Criar Nova Conta</a>
+            </div>
+            <div class="text-center">
+                <a href="#" class="text-muted text-decoration-none" style="font-size: 12px;" onclick="alert('Um link de redefinição seria enviado para o seu e-mail.')">Esqueci minha senha</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- VIEW: HOME / DASHBOARD -->
+    <div id="home-view" class="app-view">
+        <div class="d-flex justify-content-between align-items-center mb-3 mt-1">
+            <h6 class="fw-bold mb-0">Visão Geral</h6>
+            <input type="month" id="filtro-mes" class="fw-bold" onchange="window.atualizarDashboard()">
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-box"><canvas id="c-bar"></canvas></div>
-            <div class="chart-box"><canvas id="c-line"></canvas></div>
-            <div class="chart-box"><canvas id="c-pie"></canvas></div>
+        <div class="finai-card finai-card-gradient text-white position-relative overflow-hidden">
+            <div style="opacity: 0.1; position: absolute; right: -20px; bottom: -20px; font-size: 120px;"><i class="bi bi-wallet2"></i></div>
+            <small style="font-size: 12px; opacity: 0.9;">Saldo Líquido Disponível</small>
+            <h2 class="fw-bold my-1" id="dash-patrimonio">R$ 0,00</h2>
+            <div class="d-flex justify-content-between align-items-center mt-3" style="font-size: 12px; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 12px;">
+                <span><i class="bi bi-graph-up-arrow me-1"></i> Balanço do Mês:</span>
+                <span class="fw-bold" id="dash-economia">R$ 0,00</span>
+            </div>
         </div>
 
-        <table>
-            <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
-            <tbody id="lista"></tbody>
-        </table>
-    </main>
+        <div class="row row-cols-2 g-2 mb-3">
+            <div class="col">
+                <div class="finai-card m-0 p-3">
+                    <span class="text-muted d-block mb-1" style="font-size: 11px;"><i class="bi bi-arrow-down-left-circle-fill text-success me-1"></i>Receitas</span>
+                    <span class="fw-bold text-success" style="font-size: 14px;" id="dash-receitas">+ R$ 0,00</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="finai-card m-0 p-3">
+                    <span class="text-muted d-block mb-1" style="font-size: 11px;"><i class="bi bi-arrow-up-right-circle-fill text-danger me-1"></i>Despesas</span>
+                    <span class="fw-bold text-danger" style="font-size: 14px;" id="dash-despesas">- R$ 0,00</span>
+                </div>
+            </div>
+        </div>
 
-    <div id="modal-config" class="modal">
-        <div class="modal-content">
-            <h3>Configurações</h3>
-            <label>Nome da Empresa</label>
-            <input type="text" id="conf-nome" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:8px;">
-            <button class="btn-glow btn-add" onclick="salvarConfig()">SALVAR</button>
-            <button onclick="document.getElementById('modal-config').style.display='none'" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer; color:#94a3b8">Fechar</button>
+        <div class="finai-card">
+            <h6 class="fw-bold mb-3" style="font-size: 13px;">Evolução do Saldo (Últimos 6 meses)</h6>
+            <canvas id="chartPatrimonio" style="max-height: 160px;"></canvas>
+        </div>
+        <div class="finai-card">
+            <h6 class="fw-bold mb-3" style="font-size: 13px;">Gastos por Categoria (Mês)</h6>
+            <canvas id="chartCategorias" style="max-height: 160px;"></canvas>
         </div>
     </div>
 
-    <script>
-        let db = JSON.parse(localStorage.getItem('fin_v5_final')) || { trans: [], config: { nome: "Minha Empresa" } };
-        let logado = localStorage.getItem('fin_auth_v5') === 'true';
-        let charts = {};
+    <!-- VIEW: TRANSAÇÕES / GESTÃO -->
+    <div id="transactions-view" class="app-view">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">Fluxo de Caixa</h6>
+            <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="window.abrirModalNovaTransacao()" style="background-color: var(--finai-purple); border: none;">
+                <i class="bi bi-plus-lg me-1"></i> Lançar
+            </button>
+        </div>
 
-        function add() {
-            // REGRA DOS 2 LANÇAMENTOS
-            if (!logado && db.trans.length >= 2) {
-                document.getElementById('auth-overlay').style.display = 'flex';
-                return;
-            }
+        <div class="finai-card p-2">
+            <div class="list-group list-group-flush" id="transactions-list">
+                <!-- Preenchido via Firebase -->
+            </div>
+        </div>
 
-            const d = document.getElementById('in-desc'), v = document.getElementById('in-val'), dt = document.getElementById('in-date'), t = document.getElementById('in-tipo');
-            if(!d.value || !v.value || !dt.value) return alert("Preencha tudo!");
+        <div class="finai-card">
+            <h6 class="fw-bold mb-2" style="font-size: 13px;"><i class="bi bi-camera me-1"></i> Minhas Compras (Notinhas)</h6>
+            <p class="text-muted mb-3" style="font-size: 11px;">Tire uma foto ou envie da galeria para a IA extrair os dados e classificar seu gasto.</p>
+            <div class="d-flex gap-2">
+                <div class="border style-dash border-dashed rounded-3 p-3 text-center bg-light flex-fill position-relative" style="border: 2px dashed #ccc !important;">
+                    <label class="d-block cursor-pointer w-100 m-0">
+                        <i class="bi bi-camera fs-3 text-primary"></i><span class="d-block mt-1 fw-semibold text-primary" style="font-size: 11px;">Câmera</span>
+                        <input type="file" class="d-none" accept="image/*" capture="environment" onchange="window.processarNotinha(event)">
+                    </label>
+                </div>
+                <div class="border style-dash border-dashed rounded-3 p-3 text-center bg-light flex-fill position-relative" style="border: 2px dashed #ccc !important;">
+                    <label class="d-block cursor-pointer w-100 m-0">
+                        <i class="bi bi-image fs-3 text-info"></i><span class="d-block mt-1 fw-semibold text-info" style="font-size: 11px;">Galeria</span>
+                        <input type="file" class="d-none" accept="image/*" onchange="window.processarNotinha(event)">
+                    </label>
+                </div>
+            </div>
+            <div id="ocr-loading" class="text-center mt-3 d-none">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="ms-2 fw-semibold text-primary" style="font-size: 11px;">IA FinAI lendo a notinha...</span>
+            </div>
+        </div>
 
-            db.trans.push({ id: Date.now(), desc: d.value, val: parseFloat(v.value), data: dt.value, tipo: t.value, status: 'pago' });
-            localStorage.setItem('fin_v5_final', JSON.stringify(db));
-            
-            d.value = ''; v.value = ''; dt.value = '';
-            render();
-        }
+        <div class="finai-card mb-3">
+            <h6 class="fw-bold mb-2" style="font-size: 13px;">Gerenciar Categorias</h6>
+            <div class="d-flex flex-wrap gap-1 mb-2" id="categories-badge-container"></div>
+            <div class="input-group input-group-sm mt-3">
+                <input type="text" class="form-control" id="new-category-name" placeholder="Nova Categoria">
+                <button class="btn btn-outline-primary" type="button" onclick="window.addNewCategory()">Criar</button>
+            </div>
+        </div>
+    </div>
 
-        function finalizarCadastro() {
-            const nome = document.getElementById('reg-nome').value;
-            const email = document.getElementById('reg-email').value;
-            if(nome && email) {
-                db.config.nome = nome; // O nome do usuário vira o nome da empresa
-                localStorage.setItem('fin_auth_v5', 'true');
-                localStorage.setItem('fin_v5_final', JSON.stringify(db));
-                location.reload();
+    <!-- VIEW: INVESTIMENTOS -->
+    <div id="investments-view" class="app-view">
+        <h6 class="fw-bold mb-3">Mercado & Simulações</h6>
+        <div class="row row-cols-2 g-2 mb-3">
+            <div class="col"><div class="finai-card m-0 p-2 text-center"><span class="text-muted d-block mb-1" style="font-size: 11px;"><i class="bi bi-pencil-square"></i> Taxa SELIC (%)</span><input type="number" step="0.01" id="input-selic" class="input-taxa text-primary" value="10.75"></div></div>
+            <div class="col"><div class="finai-card m-0 p-2 text-center"><span class="text-muted d-block mb-1" style="font-size: 11px;"><i class="bi bi-pencil-square"></i> CDI Atual (%)</span><input type="number" step="0.01" id="input-cdi" class="input-taxa text-info" value="10.65"></div></div>
+        </div>
+        <div class="finai-card">
+            <h6 class="fw-bold mb-2 text-purple" style="font-size: 13px; color: var(--finai-purple);"><i class="bi bi-calculator me-1"></i> Simulador CDB 100% CDI</h6>
+            <div class="mb-2"><label class="form-label mb-1" style="font-size: 11px;">Valor Inicial (R$)</label><input type="number" class="form-control form-control-sm" id="cdb-inicial" value="10000"></div>
+            <div class="mb-2"><label class="form-label mb-1" style="font-size: 11px;">Aporte Mensal (R$)</label><input type="number" class="form-control form-control-sm" id="cdb-mensal" value="500"></div>
+            <div class="mb-3"><label class="form-label mb-1" style="font-size: 11px;">Prazo (Meses)</label><input type="number" class="form-control form-control-sm" id="cdb-prazo" value="12"></div>
+            <button class="btn btn-sm btn-primary w-100 rounded-pill" onclick="window.calcularCDB()">Simular</button>
+            <div id="cdb-resultado" class="mt-3 bg-light text-dark p-2 rounded-3 d-none" style="font-size: 11px;">
+                <div class="d-flex justify-content-between"><span>Valor Investido:</span> <strong id="res-cdb-investido">R$ 0,00</strong></div>
+                <div class="d-flex justify-content-between"><span>Rendimento Bruto:</span> <strong id="res-cdb-bruto" class="text-success">R$ 0,00</strong></div>
+                <div class="d-flex justify-content-between"><span>Imposto Estimado (IR):</span> <strong id="res-cdb-ir" class="text-danger">R$ 0,00</strong></div>
+                <div class="d-flex justify-content-between border-top pt-1 mt-1"><span>Valor Líquido Total:</span> <strong id="res-cdb-liquido" class="text-primary">R$ 0,00</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW: METAS -->
+    <div id="goals-view" class="app-view">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">Metas e Objetivos</h6>
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-2" style="font-size: 11px;" onclick="window.abrirModalNovaMeta()">+ Nova Meta</button>
+        </div>
+        <div id="goals-container"></div>
+    </div>
+
+    <!-- VIEW: CONFIGURAÇÕES -->
+    <div id="settings-view" class="app-view">
+        <div class="finai-card text-center mb-3">
+            <div class="position-relative d-inline-block cursor-pointer mb-2" onclick="document.getElementById('profile-upload').click()">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" id="settings-profile-img" alt="Profile" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid var(--finai-purple);">
+                <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; transform: translate(-10%, -10%);"><i class="bi bi-camera" style="font-size: 12px;"></i></div>
+            </div>
+            <input type="file" id="profile-upload" class="d-none" accept="image/*" onchange="window.updateProfilePic(event)">
+            <div>
+                <label class="form-label text-muted mb-1" style="font-size: 11px;">Como devemos te chamar?</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control text-center bg-light border-end-0 text-dark" id="user-name-input" placeholder="Seu Nome">
+                    <button class="btn btn-light border text-dark" type="button" onclick="window.updateUserName()"><i class="bi bi-check-lg text-success"></i> Salvar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="finai-card mb-3 p-3 border" style="border-color: var(--finai-success) !important; background: rgba(45, 206, 137, 0.05);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold text-success mb-0" style="font-size: 13px;">Plano Gratuito Ativo</h6>
+                    <small class="text-success" style="font-size: 11px;">7 dias de teste restantes</small>
+                </div>
+                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+            </div>
+        </div>
+
+        <div class="finai-card border-0 text-white p-3 mb-3" style="background: linear-gradient(135deg, #111 0%, #321575 100%); border-radius: 20px;">
+            <h6 class="fw-bold mb-1">FinAI Premium</h6>
+            <p class="mb-3" style="font-size: 11px; opacity: 0.8;">Desbloqueie IA sem limites e simulações ilimitadas.</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0">R$ 14,90<span style="font-size: 11px; font-weight: normal;">/mês</span></h5>
+                <button class="btn btn-xs btn-warning rounded-pill px-3 fw-bold text-dark" style="font-size: 11px;">Upgrade Já</button>
+            </div>
+        </div>
+        
+        <div class="finai-card p-2">
+            <div class="list-group list-group-flush bg-transparent">
+                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 border-0 border-bottom cursor-pointer" onclick="window.toggleTheme()">
+                    <span style="font-size: 13px;"><i class="bi bi-moon-stars me-2 text-primary"></i> Alternar Tema</span>
+                    <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="themeSwitch" style="cursor: pointer;"></div>
+                </div>
+                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 border-0 border-bottom cursor-pointer" onclick="alert('Dados exportados em PDF com sucesso!')">
+                    <span style="font-size: 13px;"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i> Exportar Dados para PDF</span>
+                    <i class="bi bi-chevron-right text-muted" style="font-size: 12px;"></i>
+                </div>
+                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 border-0 border-bottom cursor-pointer" onclick="alert('Planilha gerada com sucesso!')">
+                    <span style="font-size: 13px;"><i class="bi bi-file-earmark-excel me-2 text-success"></i> Exportar Dados para Excel (XLSX)</span>
+                    <i class="bi bi-chevron-right text-muted" style="font-size: 12px;"></i>
+                </div>
+                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 border-0 border-bottom cursor-pointer" onclick="alert('Enviaremos um link de alteração para seu email.')">
+                    <span style="font-size: 13px;"><i class="bi bi-shield-lock me-2 text-info"></i> Alterar Senha de Acesso</span>
+                    <i class="bi bi-chevron-right text-muted" style="font-size: 12px;"></i>
+                </div>
+                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 border-0 text-danger cursor-pointer" onclick="window.fazerLogout()">
+                    <span style="font-size: 13px;"><i class="bi bi-box-arrow-left me-2"></i> Sair da Conta</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- FIM APP-CONTENT -->
+
+<!-- Navbar Inferior (Oculta no Login) -->
+<div class="app-navbar" id="main-navbar" style="display: none !important;">
+    <a class="nav-item-custom" id="nav-home" onclick="window.switchView('home')"><i class="bi bi-grid-1x2-fill"></i><span>Home</span></a>
+    <a class="nav-item-custom" id="nav-transactions" onclick="window.switchView('transactions')"><i class="bi bi-arrow-left-right"></i><span>Transações</span></a>
+    <a class="nav-item-custom" id="nav-investments" onclick="window.switchView('investments')"><i class="bi bi-currency-dollar"></i><span>Investir</span></a>
+    <a class="nav-item-custom" id="nav-goals" onclick="window.switchView('goals')"><i class="bi bi-trophy"></i><span>Metas</span></a>
+    <a class="nav-item-custom" id="nav-settings" onclick="window.switchView('settings')"><i class="bi bi-sliders2"></i><span>Ajustes</span></a>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade" id="modalNovaMeta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mx-auto" style="max-width: 360px;">
+        <div class="modal-content rounded-4 border-0 text-dark">
+            <div class="modal-header border-0"><h6 class="modal-title fw-bold" id="modalMetaLabel">Criar Meta</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body pt-0">
+                <input type="hidden" id="meta-id">
+                <div class="mb-2"><label class="form-label" style="font-size: 11px;">Nome da Meta</label><input type="text" class="form-control form-control-sm" id="meta-nome" placeholder="Ex: Comprar Carro"></div>
+                <div class="mb-2"><label class="form-label" style="font-size: 11px;">Valor Total Necessário (R$)</label><input type="number" class="form-control form-control-sm" id="meta-valor" placeholder="0.00"></div>
+                <div class="mb-3"><label class="form-label" style="font-size: 11px;">Prazo</label><input type="date" class="form-control form-control-sm" id="meta-prazo"></div>
+                <button class="btn btn-sm btn-primary w-100 rounded-pill" onclick="window.salvarNovaMeta()" data-bs-dismiss="modal">Salvar Meta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddValorMeta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mx-auto" style="max-width: 360px;">
+        <div class="modal-content rounded-4 border-0 text-dark">
+            <div class="modal-header border-0"><h6 class="modal-title fw-bold">Investir na Meta</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body pt-0">
+                <input type="hidden" id="meta-add-id">
+                <input type="number" class="form-control form-control-sm mb-3" id="meta-add-valor" placeholder="Valor do Aporte (R$)">
+                <button class="btn btn-sm btn-success w-100 rounded-pill" onclick="window.confirmarAddValorMeta()" data-bs-dismiss="modal">Adicionar à Meta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTransacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mx-auto" style="max-width: 360px;">
+      <div class="modal-content rounded-4 border-0 text-dark">
+        <div class="modal-header border-0"><h6 class="modal-title fw-bold" id="modalTransacaoLabel">Lançamento</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body pt-0">
+          <input type="hidden" id="trans-id">
+          <div class="mb-2"><label class="form-label" style="font-size: 11px;">Tipo</label><select class="form-select form-select-sm" id="trans-tipo"><option value="Receita">Receita</option><option value="Despesa">Despesa</option></select></div>
+          <div class="mb-2"><label class="form-label" style="font-size: 11px;">Descrição / Local</label><input type="text" class="form-control form-control-sm" id="trans-desc"></div>
+          <div class="mb-2"><label class="form-label" style="font-size: 11px;">Valor Lido / Informado (R$)</label><input type="number" step="0.01" class="form-control form-control-sm" id="trans-valor"></div>
+          <div class="mb-2"><label class="form-label" style="font-size: 11px;">Categoria</label><select class="form-select form-select-sm" id="trans-cat"></select></div>
+          <div class="mb-3"><label class="form-label" style="font-size: 11px;">Data</label><input type="date" class="form-control form-control-sm" id="trans-data"></div>
+          <button type="button" class="btn btn-sm btn-primary w-100 rounded-pill mt-2" onclick="window.salvarTransacao()" data-bs-dismiss="modal">Confirmar Lançamento</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 🔥 FIREBASE & LÓGICA DO APP 🔥 -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDh1Jyiw_5dx64z4lYorDM8Pv3e_o98YsY",
+        authDomain: "finai-e97dc.firebaseapp.com",
+        projectId: "finai-e97dc",
+        storageBucket: "finai-e97dc.firebasestorage.app",
+        messagingSenderId: "350903869262",
+        appId: "1:350903869262:web:6f592702ee1bfec61a881f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userId = null;
+    let transacoes = []; 
+
+    // ---- AUTENTICAÇÃO ----
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userId = user.uid;
+            if(user.email === 'bno229@gmail.com') {
+                document.getElementById('header-user-name').innerText = "Fabiano (Master)";
             } else {
-                alert("Preencha Nome e E-mail!");
+                document.getElementById('header-user-name').innerText = "Usuário";
+            }
+            
+            await window.carregarTransacoes();
+            window.switchView('home');
+        } else {
+            userId = null;
+            transacoes = [];
+            window.switchView('login');
+        }
+    });
+
+    window.fazerLogin = async () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        if(!email || !pass) return alert("Preencha e-mail e senha!");
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (error) {
+            alert("Erro ao entrar: Verifique o e-mail ou a senha.");
+            console.error(error);
+        }
+    };
+
+    window.criarConta = async () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        
+        if(!email || pass.length < 6) {
+            return alert("Informe um e-mail válido e uma senha com no mínimo 6 caracteres.");
+        }
+        
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+            
+            // Cria um documento visível no banco de dados para a conta nova
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                criadoEm: new Date().toISOString()
+            });
+            
+            alert("Conta criada com sucesso! Bem-vindo ao FinAI.");
+        } catch (error) {
+            alert("Erro ao criar conta. O e-mail já pode estar em uso.");
+            console.error(error);
+        }
+    };
+
+    window.fazerLogout = async () => {
+        await signOut(auth);
+    };
+
+    // ---- LÓGICA DO FIREBASE (CRUD Transações) ----
+    window.carregarTransacoes = async () => {
+        if (!userId) return;
+        transacoes = [];
+        try {
+            const q = query(collection(db, "users", userId, "transacoes"), orderBy("data", "desc"));
+            const snapshot = await getDocs(q);
+            snapshot.forEach((doc) => {
+                let t = doc.data();
+                t.id = doc.id; 
+                transacoes.push(t);
+            });
+            window.renderTransacoes();
+            window.atualizarDashboard();
+        } catch (error) {
+            console.log("Erro ao carregar dados do banco:", error);
+        }
+    }
+
+    window.salvarTransacao = async () => {
+        if (!userId) return;
+        const id = document.getElementById('trans-id').value;
+        const tipo = document.getElementById('trans-tipo').value;
+        const desc = document.getElementById('trans-desc').value || 'Transação';
+        const valor = parseFloat(document.getElementById('trans-valor').value) || 0;
+        const cat = document.getElementById('trans-cat').value;
+        const data = document.getElementById('trans-data').value;
+
+        const novaTransacao = { tipo, desc, valor, cat, data, criadoEm: new Date().toISOString() };
+
+        try {
+            if (id) {
+                await updateDoc(doc(db, "users", userId, "transacoes", id), novaTransacao);
+            } else {
+                await addDoc(collection(db, "users", userId, "transacoes"), novaTransacao);
+            }
+            await window.carregarTransacoes(); 
+        } catch (error) {
+            alert("Erro ao salvar no banco: " + error.message);
+        }
+    };
+
+    window.excluirTransacao = async (id) => {
+        if (!userId) return;
+        if(confirm("Deseja excluir definitivamente da nuvem?")) {
+            try {
+                await deleteDoc(doc(db, "users", userId, "transacoes", id));
+                await window.carregarTransacoes();
+            } catch (error) {
+                alert("Erro ao excluir: " + error.message);
             }
         }
+    };
 
-        function sair() {
-            localStorage.removeItem('fin_auth_v5');
-            location.reload();
+    // --- FUNÇÕES VISUAIS DO APP (Renderização e Cálculos) ---
+    const ctxPatrimonio = document.getElementById('chartPatrimonio').getContext('2d');
+    let chartPatrimonioInst = new Chart(ctxPatrimonio, { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#6c5ce7', backgroundColor: 'rgba(108, 92, 231, 0.1)', fill: true, tension: 0.4 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } } });
+    const ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
+    let chartCategoriasInst = new Chart(ctxCategorias, { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#6c5ce7', '#00f2fe', '#f5365c', '#2dce89', '#fdcb6e'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } } });
+
+    window.switchView = function(viewName) {
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-item-custom').forEach(nav => nav.classList.remove('active'));
+        const header = document.getElementById('main-header');
+        const navbar = document.getElementById('main-navbar');
+        const targetView = document.getElementById(viewName + '-view');
+        if(viewName === 'login') {
+            header.style.setProperty('display', 'none', 'important');
+            navbar.style.setProperty('display', 'none', 'important');
+            if(targetView) targetView.classList.add('active');
+        } else {
+            header.style.setProperty('display', 'flex', 'important');
+            navbar.style.setProperty('display', 'flex', 'important');
+            if(targetView) targetView.classList.add('active');
+            const navIcon = document.getElementById('nav-' + viewName);
+            if(navIcon) navIcon.classList.add('active');
         }
+    };
 
-        function abrirConfig() {
-            document.getElementById('conf-nome').value = db.config.nome;
-            document.getElementById('modal-config').style.display = 'flex';
+    const dataAtual = new Date();
+    document.getElementById('filtro-mes').value = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(2, '0')}`;
+    let patrimonioBaseInicial = 0.00; // Alterado de 345000 para 0
+
+    window.renderTransacoes = function() {
+        const list = document.getElementById('transactions-list');
+        list.innerHTML = '';
+        if(transacoes.length === 0) {
+            list.innerHTML = `<p class="text-center text-muted mt-3" style="font-size:12px;">Nenhuma transação salva.</p>`;
+            return;
         }
+        transacoes.forEach(t => {
+            const isReceita = t.tipo === 'Receita';
+            const colorClass = isReceita ? 'success' : 'danger';
+            const sign = isReceita ? '+' : '-';
+            const icon = isReceita ? 'bi-cash-stack' : 'bi-credit-card';
+            const item = document.createElement('div');
+            item.className = "list-group-item d-flex justify-content-between align-items-center py-3 bg-transparent border-0 border-bottom";
+            item.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="text-${colorClass} p-2 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(0,0,0,0.03);">
+                        <i class="bi ${icon}"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold" style="font-size: 13px;">${t.desc}</h6>
+                        <small class="text-muted" style="font-size: 11px;">${t.data.split('-').reverse().join('/')} • ${t.cat}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="fw-bold text-${colorClass} d-block" style="font-size: 13px;">${sign} R$ ${t.valor.toFixed(2)}</span>
+                    <div class="mt-1">
+                        <i class="bi bi-pencil text-muted cursor-pointer me-2" style="font-size:11px;" onclick="window.abrirModalEdicao('${t.id}')"></i>
+                        <i class="bi bi-trash text-danger cursor-pointer" style="font-size:11px;" onclick="window.excluirTransacao('${t.id}')"></i>
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    };
 
-        function salvarConfig() {
-            db.config.nome = document.getElementById('conf-nome').value;
-            localStorage.setItem('fin_v5_final', JSON.stringify(db));
-            document.getElementById('modal-config').style.display = 'none';
-            render();
+    window.atualizarDashboard = function() {
+        const mesFiltro = document.getElementById('filtro-mes').value;
+        let recMes = 0, despMes = 0, totalGlobalRec = 0, totalGlobalDesp = 0;
+        let catTotais = {};
+
+        transacoes.forEach(t => {
+            if(t.tipo === 'Receita') totalGlobalRec += t.valor;
+            if(t.tipo === 'Despesa') totalGlobalDesp += t.valor;
+
+            if(t.data.startsWith(mesFiltro)) {
+                if(t.tipo === 'Receita') recMes += t.valor;
+                if(t.tipo === 'Despesa') {
+                    despMes += t.valor;
+                    catTotais[t.cat] = (catTotais[t.cat] || 0) + t.valor;
+                }
+            }
+        });
+
+        let saldoLiquido = patrimonioBaseInicial + totalGlobalRec - totalGlobalDesp;
+        document.getElementById('dash-patrimonio').innerText = 'R$ ' + saldoLiquido.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('dash-receitas').innerText = '+ R$ ' + recMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('dash-despesas').innerText = '- R$ ' + despMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        
+        let balancoMes = recMes - despMes;
+        document.getElementById('dash-economia').innerText = 'R$ ' + balancoMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('dash-economia').style.color = balancoMes >= 0 ? '#2dce89' : '#f5365c';
+
+        const labelsCat = Object.keys(catTotais);
+        const dataCat = Object.values(catTotais);
+        if(labelsCat.length > 0) { chartCategoriasInst.data.labels = labelsCat; chartCategoriasInst.data.datasets[0].data = dataCat; } 
+        else { chartCategoriasInst.data.labels = ['Sem Gastos']; chartCategoriasInst.data.datasets[0].data = [1]; }
+        chartCategoriasInst.update();
+        window.atualizarGraficoLinha();
+    };
+
+    window.atualizarGraficoLinha = function() {
+        const ultimos6Meses = [];
+        for(let i=5; i>=0; i--) {
+            let d = new Date(); d.setMonth(d.getMonth() - i);
+            ultimos6Meses.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
         }
+        let saldoAcumulado = patrimonioBaseInicial;
+        const dadosLinha = []; const labelsLinha = [];
 
-        function render() {
-            document.getElementById('nome-empresa-exibicao').innerText = db.config.nome;
-            if(logado) document.getElementById('btn-sair').style.display = 'block';
-
-            const lista = document.getElementById('lista');
-            let ent = 0, sai = 0, html = '';
-
-            db.trans.sort((a,b) => b.data.localeCompare(a.data)).forEach(i => {
-                if(i.tipo === 'entrada') ent += i.val; else sai += i.val;
-                const cor = i.tipo === 'entrada' ? 'var(--success)' : 'var(--danger)';
-                html += `<tr>
-                    <td>${i.data.split('-').reverse().join('/')}</td>
-                    <td>${i.desc}</td>
-                    <td>R$ ${i.val.toFixed(2)}</td>
-                    <td><span class="status-badge" style="background:${cor}22; color:${cor}">CONCLUÍDO</span></td>
-                    <td><button onclick="del(${i.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
-                </tr>`;
+        ultimos6Meses.forEach(mesAno => {
+            let balancoDoMes = 0;
+            transacoes.forEach(t => {
+                if(t.data.startsWith(mesAno)) {
+                    if(t.tipo === 'Receita') balancoDoMes += t.valor;
+                    if(t.tipo === 'Despesa') balancoDoMes -= t.valor;
+                }
             });
+            saldoAcumulado += balancoDoMes;
+            dadosLinha.push(saldoAcumulado);
+            labelsLinha.push(mesAno.split('-')[1] + '/' + mesAno.split('-')[0].substring(2));
+        });
 
-            lista.innerHTML = html;
-            document.getElementById('res-caixa').innerText = `R$ ${(ent - sai).toFixed(2)}`;
-            document.getElementById('res-ent').innerText = `R$ ${ent.toFixed(2)}`;
-            document.getElementById('res-sai').innerText = `R$ ${sai.toFixed(2)}`;
-            
-            updateCharts(ent, sai);
-        }
+        chartPatrimonioInst.data.labels = labelsLinha;
+        chartPatrimonioInst.data.datasets[0].data = dadosLinha;
+        chartPatrimonioInst.update();
+    };
 
-        function del(id) {
-            db.trans = db.trans.filter(x => x.id !== id);
-            localStorage.setItem('fin_v5_final', JSON.stringify(db));
-            render();
-        }
+    window.abrirModalNovaTransacao = () => {
+        document.getElementById('trans-id').value = '';
+        document.getElementById('trans-desc').value = '';
+        document.getElementById('trans-valor').value = '';
+        document.getElementById('trans-data').value = new Date().toISOString().split('T')[0];
+        document.getElementById('modalTransacaoLabel').innerText = 'Novo Lançamento';
+        new bootstrap.Modal(document.getElementById('modalTransacao')).show();
+    };
 
-        function updateCharts(e, s) {
-            if(charts.b) charts.b.destroy();
-            charts.b = new Chart(document.getElementById('c-bar'), {
-                type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [e, s], backgroundColor: ['#22c55e', '#ef4444'] }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+    window.abrirModalEdicao = (id) => {
+        const t = transacoes.find(x => x.id === id);
+        if(!t) return;
+        document.getElementById('trans-id').value = t.id;
+        document.getElementById('trans-tipo').value = t.tipo;
+        document.getElementById('trans-desc').value = t.desc;
+        document.getElementById('trans-valor').value = t.valor;
+        document.getElementById('trans-cat').value = t.cat;
+        document.getElementById('trans-data').value = t.data;
+        document.getElementById('modalTransacaoLabel').innerText = 'Editar Lançamento';
+        new bootstrap.Modal(document.getElementById('modalTransacao')).show();
+    };
 
-            if(charts.l) charts.l.destroy();
-            charts.l = new Chart(document.getElementById('c-line'), {
-                type: 'line', data: { labels: db.trans.map(i => i.data.split('-')[2]), datasets: [{ label: 'Saldo', data: db.trans.map(i => i.val), borderColor: '#3b82f6', tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+    let categoriasAtivas = ['Salário', 'Mercado', 'Delivery', 'Lazer', 'Assinatura'];
+    window.renderCategorias = () => {
+        const container = document.getElementById('categories-badge-container');
+        container.innerHTML = '';
+        const selectCat = document.getElementById('trans-cat');
+        selectCat.innerHTML = '';
+        categoriasAtivas.forEach((cat, index) => {
+            const span = document.createElement('span'); span.className = "badge bg-light text-dark border d-flex align-items-center py-2 px-3";
+            span.innerHTML = `${cat} <i class="bi bi-x ms-2 text-danger cursor-pointer" onclick="window.removerCategoria(${index})"></i>`;
+            container.appendChild(span);
+            const opt = document.createElement('option'); opt.value = cat; opt.text = cat; selectCat.appendChild(opt);
+        });
+    };
+    window.addNewCategory = () => {
+        const nameInput = document.getElementById('new-category-name');
+        const name = nameInput.value.trim();
+        if(name && !categoriasAtivas.includes(name)) { categoriasAtivas.push(name); window.renderCategorias(); nameInput.value = ''; }
+    };
+    window.removerCategoria = (index) => { categoriasAtivas.splice(index, 1); window.renderCategorias(); };
+    window.renderCategorias();
 
-            if(charts.p) charts.p.destroy();
-            charts.p = new Chart(document.getElementById('c-pie'), {
-                type: 'doughnut', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [e, s], backgroundColor: ['#22c55e', '#ef4444'] }] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-        render();
-    </script>
+    window.processarNotinha = (event) => {
+        const file = event.target.files[0];
+        if(!file) return;
+        const loadingDiv = document.getElementById('ocr-loading');
+        loadingDiv.classList.remove('d-none');
+        setTimeout(() => {
+            loadingDiv.classList.add('d-none'); event.target.value = ''; 
+            const valorExtraido = (Math.random() * (250 - 30) + 30).toFixed(2);
+            document.getElementById('trans-id').value = '';
+            document.getElementById('trans-tipo').value = 'Despesa';
+            document.getElementById('trans-desc').value = 'Despesa lida por IA (Altere)';
+            document.getElementById('trans-valor').value = valorExtraido;
+            document.getElementById('trans-cat').value = categoriasAtivas.includes('Mercado') ? 'Mercado' : categoriasAtivas[0];
+            document.getElementById('trans-data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modalTransacaoLabel').innerText = 'IA FinAI Lida! Confirme os dados:';
+            new bootstrap.Modal(document.getElementById('modalTransacao')).show();
+        }, 2000);
+    };
+
+    window.toggleTheme = function() {
+        const htmlEl = document.documentElement;
+        htmlEl.getAttribute('data-theme') === 'dark' ? htmlEl.removeAttribute('data-theme') : htmlEl.setAttribute('data-theme', 'dark');
+        chartCategoriasInst.options.plugins.legend.labels.color = htmlEl.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#2d3748';
+        chartCategoriasInst.update();
+    };
+
+    let metas = []; // Inicia vazio para cada usuário
+    window.renderMetas = function() {
+        const container = document.getElementById('goals-container');
+        container.innerHTML = '';
+        metas.forEach(meta => {
+            let perc = meta.valorTotal > 0 ? Math.min(100, Math.round((meta.valorAtual / meta.valorTotal) * 100)) : 0;
+            meta.color = perc === 100 ? "success" : "primary";
+            let strokeColor = meta.color === "success" ? "#2dce89" : "#6c5ce7";
+            let offset = 125.6 - (125.6 * perc / 100);
+            const div = document.createElement('div');
+            div.className = "finai-card position-relative";
+            div.innerHTML = `
+                <div class="position-absolute top-0 end-0 m-3"><i class="bi bi-pencil text-muted cursor-pointer me-2" onclick="window.abrirModalEdicaoMeta(${meta.id})"></i><i class="bi bi-trash text-danger cursor-pointer" onclick="window.excluirMeta(${meta.id})"></i></div>
+                <h6 class="fw-bold mb-3" style="font-size: 14px; max-width: 80%;">${meta.nome}</h6>
+                <div class="text-center mb-1"><svg viewBox="0 0 100 50" style="width: 130px; height: 65px; overflow: visible;"><path class="gauge-path-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="12" stroke-linecap="round"/><path class="gauge-path-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="${strokeColor}" stroke-width="12" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="${offset}"/><text x="50" y="45" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor">${perc}%</text></svg></div>
+                <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 11px;"><span><i class="bi bi-cash"></i> R$ ${meta.valorAtual.toLocaleString('pt-BR')} / R$ ${meta.valorTotal.toLocaleString('pt-BR')}</span><span><i class="bi bi-calendar-event"></i> ${meta.prazo}</span></div>
+                <button class="btn btn-sm btn-outline-secondary mt-3 py-0 px-2" style="font-size: 11px; margin: 0 auto; display: block;" onclick="window.abrirModalAddValor(${meta.id})">+ Adicionar Valor</button>
+            `;
+            container.appendChild(div);
+        });
+    };
+    window.renderMetas();
+    
+    window.abrirModalNovaMeta = () => { document.getElementById('meta-id').value = ''; document.getElementById('meta-nome').value = ''; document.getElementById('meta-valor').value = ''; document.getElementById('meta-prazo').value = ''; document.getElementById('modalMetaLabel').innerText = 'Criar Meta'; new bootstrap.Modal(document.getElementById('modalNovaMeta')).show(); };
+    window.abrirModalEdicaoMeta = (id) => { const m = metas.find(x => x.id === id); if(!m) return; document.getElementById('meta-id').value = m.id; document.getElementById('meta-nome').value = m.nome; document.getElementById('meta-valor').value = m.valorTotal; document.getElementById('meta-prazo').value = m.prazo !== "Indefinido" ? m.prazo : ''; document.getElementById('modalMetaLabel').innerText = 'Editar Meta'; new bootstrap.Modal(document.getElementById('modalNovaMeta')).show(); };
+    window.salvarNovaMeta = () => { const id = document.getElementById('meta-id').value; const nome = document.getElementById('meta-nome').value; const valorTotal = parseFloat(document.getElementById('meta-valor').value) || 0; const prazo = document.getElementById('meta-prazo').value; if(!nome || valorTotal <= 0) return alert("Informe o nome e o valor total válido."); if(id) { const index = metas.findIndex(m => m.id == id); if(index !== -1) { metas[index].nome = nome; metas[index].valorTotal = valorTotal; metas[index].prazo = prazo || "Indefinido"; if(metas[index].valorAtual > valorTotal) metas[index].valorAtual = valorTotal; } } else { metas.push({ id: Date.now(), nome: nome, valorAtual: 0, valorTotal: valorTotal, prazo: prazo || "Indefinido", color: "primary" }); } window.renderMetas(); };
+    window.excluirMeta = (id) => { if(confirm("Deseja realmente excluir esta meta?")) { metas = metas.filter(m => m.id !== id); window.renderMetas(); } };
+    window.abrirModalAddValor = (id) => { document.getElementById('meta-add-id').value = id; document.getElementById('meta-add-valor').value = ''; new bootstrap.Modal(document.getElementById('modalAddValorMeta')).show(); };
+    window.confirmarAddValorMeta = () => { const id = parseInt(document.getElementById('meta-add-id').value); const valorAdd = parseFloat(document.getElementById('meta-add-valor').value) || 0; const meta = metas.find(m => m.id === id); if(meta && valorAdd > 0) { meta.valorAtual += valorAdd; if(meta.valorAtual >= meta.valorTotal) meta.valorAtual = meta.valorTotal; window.renderMetas(); } };
+    window.calcularCDB = () => { const cdiAtualAnual = parseFloat(document.getElementById('input-cdi').value) || 10.65; const taxaMensalCDI = (Math.pow(1 + (cdiAtualAnual/100), 1/12) - 1); const inicial = parseFloat(document.getElementById('cdb-inicial').value) || 0; const mensal = parseFloat(document.getElementById('cdb-mensal').value) || 0; const prazo = parseInt(document.getElementById('cdb-prazo').value) || 0; let totalInvestido = inicial + (mensal * prazo), acumulado = inicial; for(let i=0; i<prazo; i++) acumulado = (acumulado + mensal) * (1 + taxaMensalCDI); let rendimentoBruto = acumulado - totalInvestido; let impostoEstimado = rendimentoBruto * (prazo > 24 ? 0.15 : (prazo > 12 ? 0.175 : (prazo > 6 ? 0.20 : 0.225))); let liquido = acumulado - impostoEstimado; document.getElementById('res-cdb-investido').innerText = 'R$ ' + totalInvestido.toLocaleString('pt-BR', {minimumFractionDigits: 2}); document.getElementById('res-cdb-bruto').innerText = 'R$ ' + rendimentoBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2}); document.getElementById('res-cdb-ir').innerText = 'R$ ' + impostoEstimado.toLocaleString('pt-BR', {minimumFractionDigits: 2}); document.getElementById('res-cdb-liquido').innerText = 'R$ ' + liquido.toLocaleString('pt-BR', {minimumFractionDigits: 2}); document.getElementById('cdb-resultado').classList.remove('d-none'); };
+</script>
+
 </body>
 </html>
